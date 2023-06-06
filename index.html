@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+  <form name="makaleForm" method="post" onsubmit="formuGonder(event)">
+    <div>
+      <label>Başlık</label>
+      <input name="baslik" type="text" placeholder="baslik" />
+    </div>
+    <div>
+      <label>İçerik</label>
+      <textarea name="icerik"></textarea>
+    </div>
+
+    <div>
+      <input type="submit" value="Ekle" />
+    </div>
+  </form>
+
+  <br>
+  <input onkeyup="Arama(event)" placeholder="arama yap" />
+
+  <div id="makaleler"></div>
+
+  <script>
+
+    let makaleler = [];
+
+    window.onload = function () {
+      MakaleleriGetir().then(data => {
+        makaleler = [...data];
+        const makaleDiv = document.getElementById("makaleler");
+
+        console.log('makaleler', makaleler);
+
+        makaleler.forEach((makale) => {
+          makaleDiv.innerHTML += `<div id="makaleIcerik${makale.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${makale.id})">${makale.title}</a></h3></div><div>${makale.body}</div>`
+        })
+
+
+      })
+    }
+
+    function formuGonder(event) {
+      event.preventDefault();
+      MakaleEkle(makaleForm.baslik.value, makaleForm.icerik.value).then(response => {
+        console.log('data', response);
+
+        const makaleDiv = document.getElementById("makaleler");
+
+        // 201 created response
+        if (response.status == 201) {
+          // son ekleneni en başa getir.
+          makaleDiv.innerHTML = `<div id="makaleIcerik${response.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${response.id})">${makaleForm.baslik.value}</a></h3></div><div>${makaleForm.icerik.value}</div>` + makaleDiv.innerHTML
+
+          alert('Kayıt Eklendi');
+        }
+
+      });
+    }
+
+    function makaleSec(id) {
+      // dökümandaki tüm id si makaleIcerik ile başlayan divleri bul arkaplanını beyaz yap.
+      alert('seçilen Makale Id' + id);
+      const elements = document.querySelectorAll('div[id^="makaleIcerik"]');
+
+      console.log('elements', elements)
+
+      elements.forEach((el) => {
+        el.style.backgroundColor = 'white';
+      });
+
+      // id seçili olan makalenin arka planını ise sarı yap
+      const makaleIcerik = document.getElementById(`makaleIcerik${id}`);
+      makaleIcerik.style.backgroundColor = 'yellow';
+    }
+
+
+    function Arama(event) {
+
+      const makaleDiv = document.getElementById("makaleler");
+
+
+      setTimeout(() => {
+
+        const aranan = event.target.value;
+
+        // makaleler datası üzerinden arama yapar. Regex kullanmamızın sebebi ise küçük büyük harfe göre arasın
+        const filtered = makaleler.filter(x => new RegExp(aranan, 'i').test(x.title));
+
+        makaleDiv.innerHTML = ''; // içini boşalt
+
+        filtered.forEach(item => {
+          makaleDiv.innerHTML += `<div id="makaleIcerik${item.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${item.id})">${item.title}</a></h3></div><div>${item.body}</div>`
+        })
+
+      }, 300);
+
+      console.log('aranacak', event.target.value);
+    }
+
+  </script>
+
+  <script src="makale.js"></script>
+
+</body>
+
+</html>
