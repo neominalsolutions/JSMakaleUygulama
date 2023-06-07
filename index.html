@@ -42,7 +42,7 @@
         console.log('makaleler', makaleler);
 
         makaleler.forEach((makale) => {
-          makaleDiv.innerHTML += `<div id="makaleIcerik${makale.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${makale.id})">${makale.title}</a></h3></div><div>${makale.body}</div>`
+          makaleDiv.innerHTML += `<div id="makaleIcerik${makale.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${makale.id})">${makale.title}</a> <button onclick="MakaleSil(${makale.id})">Sil</button> </h3><div>${makale.body}</div>`
         })
 
 
@@ -54,12 +54,16 @@
       MakaleEkle(makaleForm.baslik.value, makaleForm.icerik.value).then(response => {
         console.log('data', response);
 
+        const id = makaleler.length + 1;
+
         const makaleDiv = document.getElementById("makaleler");
 
         // 201 created response
         if (response.status == 201) {
           // son ekleneni en başa getir.
-          makaleDiv.innerHTML = `<div id="makaleIcerik${response.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${response.id})">${makaleForm.baslik.value}</a></h3></div><div>${makaleForm.icerik.value}</div>` + makaleDiv.innerHTML
+          makaleDiv.innerHTML = `<div id="makaleIcerik${id}">
+          <h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${id})">${makaleForm.baslik.value}</a><button onclick="MakaleSil('${id}')">Sil</button></h3><div>${makaleForm.icerik.value}</div>
+          </div>` + makaleDiv.innerHTML
 
           alert('Kayıt Eklendi');
         }
@@ -83,6 +87,32 @@
       makaleIcerik.style.backgroundColor = 'yellow';
     }
 
+    function MakaleSil(id) {
+
+      const ok = confirm('silmek istedeiğinize emin misiniz ?');
+
+      if (ok) {
+        fetch(`https://jsonplaceholder.typicode.com/posts/${id}`, { method: "Delete" }).then(response => {
+
+          console.log('res', response);
+
+          if (response.status == 200) {
+            // makaleyi domdan kaldır
+            const makalelerDiv = document.getElementById("makaleler");
+            const makaleIcerik = document.getElementById(`makaleIcerik${id}`);
+            makalelerDiv.removeChild(makaleIcerik);
+          }
+
+
+        });
+      }
+      else {
+        alert("Silme iptal edildi");
+      }
+
+
+    }
+
 
     function Arama(event) {
 
@@ -99,7 +129,7 @@
         makaleDiv.innerHTML = ''; // içini boşalt
 
         filtered.forEach(item => {
-          makaleDiv.innerHTML += `<div id="makaleIcerik${item.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${item.id})">${item.title}</a></h3></div><div>${item.body}</div>`
+          makaleDiv.innerHTML += `<div  id="makaleIcerik${item.id}"><h3><a style="cursor:pointer;color:blue;" onclick="makaleSec(${item.id})">${item.title}</a></h3><div>${item.body}</div></div>`
         })
 
       }, 300);
